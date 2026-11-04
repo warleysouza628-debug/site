@@ -327,3 +327,22 @@ document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=
 .detail-photo{width:100%;height:100%;object-fit:contain;display:block}
 .cart-product-visual img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
+
+
+<style>
+/* Categorias em coluna: uma opção abaixo da outra */
+.categories{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:9px !important;
+  overflow:visible !important;
+  padding:22px 0 20px !important;
+}
+.categories .chip{
+  display:block;
+  width:max-content;
+  max-width:100%;
+  text-align:left;
+}
+</style>
