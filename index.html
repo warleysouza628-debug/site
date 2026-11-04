@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#10120f">
+<meta name="theme-color" content="#090a0d">
 <meta name="description" content="RAVENX STORE — marketplace gamer. Contas, diamantes, códigos e serviços.">
-<title>RAVENX STORE — Seu próximo nível começa aqui</title>
+<title>RAVENX STORE — Marketplace gamer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -41,12 +41,73 @@ main{overflow:hidden}.container{width:min(1180px,90%);margin:auto}
 .detail-info .full-btn{margin-top:auto}.field-label{display:block;margin:7px 0 0;color:#cbd2c2;font-size:10px;font-weight:700}.email-error{display:none;margin:-7px 0 10px;color:#ff9d9d;font-size:10px}
 @media(max-width:650px){.detail-layout{grid-template-columns:1fr}.detail-main-image{height:220px}.detail-panel{padding:16px}.detail-info h2{font-size:22px}}
 
+
+/* RAVENX STORE — identidade dark, vermelho e dourado */
+:root{--bg:#090a0d;--surface:#111318;--surface2:#191c23;--line:#292d36;--text:#f4f4f5;--muted:#969ba7;--lime:#ed3445;--lime2:#d5ad61;--ink:#fff}
+body{background:var(--bg)}
+.header{background:#090a0ded;border-bottom-color:#ffffff12}
+.brand-mark{background:linear-gradient(145deg,#f04452,#b9162c);color:#fff;box-shadow:0 5px 22px #ed344533}
+.brand-name{display:flex;gap:5px;align-items:center;font-size:17px;letter-spacing:-.6px}
+.brand-ravenx{color:#f04452}.brand-store{color:#d8b66f}
+.hero{background:radial-gradient(ellipse at 78% 38%,#4a1820 0,transparent 36%),linear-gradient(115deg,#101116,#090a0d 62%)}
+.hero:after{border-color:#ed34451c}
+.hero-feature{border-color:#5a3038;background:linear-gradient(140deg,#321b23,#19151c 55%,#101116)}
+.hero-feature:before{border-color:#d5ad6140;box-shadow:0 0 0 28px #d5ad6108,0 0 0 58px #d5ad6106}
+.feature-label{color:#e6c98e}.live-dot:before{background:#d5ad61;box-shadow:0 0 12px #d5ad61}
+.feature-glyph{color:#ed3445;text-shadow:0 14px 70px #ed344540}
+.feature-bottom small{color:#b5a9a0}.feature-arrow{border-color:#8e6840;color:#e0bd79}
+.trust-strip,.how{background:#0e1015}
+.trust-icon{border-color:#493039;color:#e5b967}
+.section-kicker,.section-kicker,.eyebrow{color:#e2b96b}
+.eyebrow:before{background:#ed3445}
+.primary-link,.cart-btn,.chip:hover,.chip.active,.add-btn,.full-btn{background:#ed3445;color:#fff}
+.primary-link:hover,.add-btn:hover{background:#ff5360}
+.hero h1 span{color:#ed3445}
+.product-card{background:#111318;border-color:#292d36}
+.product-card:hover{border-color:#8e3542;background:#171920}
+.product-visual{background:linear-gradient(135deg,#351b24,#17151b)}
+.product-visual:before{border-color:#ffffff20}
+.product-visual .symbol{color:#ed3445;text-shadow:0 8px 30px #ed344545}
+.product-visual.violet{background:linear-gradient(135deg,#30243c,#17151e)}
+.product-visual.violet .symbol{color:#c5a7e8}
+.product-visual.blue{background:linear-gradient(135deg,#1d303d,#121b24)}
+.product-visual.blue .symbol{color:#91c9dc}
+.product-visual.gold{background:linear-gradient(135deg,#42351f,#211b13)}
+.product-visual.gold .symbol{color:#e4bd70}
+.product-visual.rose{background:linear-gradient(135deg,#47232d,#21151b)}
+.product-visual.rose .symbol{color:#ff9ba8}
+.product-tag{color:#e5c17a}
+.product-category{color:#e2b96b}
+.price{color:#f4f4f5}
+.demo-note{border-color:#59472d;background:#191711;color:#d7c9a8}
+.demo-note b{color:#f0d18a}
+.step{border-color:#292d36;background:#14161c}
+.step-number{background:#3a2029;color:#f16a75}
+.footer{background:#07080b}
+.footer-brand span{color:#d8b66f}
+.panel,.detail-panel{background:#12141a;border-color:#39313a}
+.field{background:#0b0d12}
+.pix-info{border-color:#59472d;background:#191711;color:#d7c9a8}
+.pix-info strong{color:#f0d18a}
+.detail-main-image{background:linear-gradient(135deg,#351b24,#17151b);border-color:#5a3038}
+.detail-main-image .symbol{color:#ed3445}
+.detail-thumb{background:linear-gradient(135deg,#351b24,#17151b);color:#ed3445}
+.detail-thumb:nth-child(2){background:linear-gradient(135deg,#30243c,#17151e);color:#c5a7e8}
+.detail-thumb:nth-child(3){background:linear-gradient(135deg,#1d303d,#121b24);color:#91c9dc}
+.detail-thumb.active{border-color:#ed3445}
+.detail-price{color:#e2b96b}
+.detail-list li:before{color:#d5ad61}
+.cart-count{background:#3a2029;color:#fff}
+.text-link span{color:#e2b96b}
+.chip{background:#111318}
+.product-foot{border-top-color:#ffffff12}
+@media(max-width:650px){.brand-name{font-size:15px}}
+
 </style>
 </head>
 <body>
-<div class="announcement">O seu próximo nível começa aqui <span>✳</span> RAVENX STORE</div>
 <header class="header">
-<a class="brand" href="#inicio"><span class="brand-mark">RX</span><span class="brand-name">RAVENX<small>GAMING STORE</small></span></a>
+<a class="brand" href="#inicio"><span class="brand-mark">RX</span><span class="brand-name"><span class="brand-ravenx">RAVENX</span> <span class="brand-store">STORE</span></span></a>
 <nav><a href="#inicio">Início</a><a href="#catalogo">Explorar produtos</a><a href="#como-funciona">Como comprar</a></nav>
 <div class="header-actions"><button class="icon-btn" onclick="document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">Explorar loja ↗</button><button class="cart-btn" onclick="openCart()">Carrinho <span class="cart-count" id="count">0</span></button></div>
 </header>
