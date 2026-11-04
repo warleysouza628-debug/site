@@ -330,21 +330,25 @@ document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=
 
 
 <style>
-/* Categorias em coluna: uma opção abaixo da outra */
+/* Catálogo: categorias em faixa horizontal e anúncios em grade */
 .categories{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:flex-start !important;
-  gap:9px !important;
-  overflow:visible !important;
-  padding:22px 0 20px !important;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:8px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:26px 0 19px;
+  white-space:nowrap;
+  scrollbar-width:none;
 }
-.categories .chip{
-  display:block;
-  width:max-content;
-  max-width:100%;
-  text-align:left;
-}
+.categories::-webkit-scrollbar{display:none}
+.categories .chip{display:inline-flex;flex:0 0 auto;width:auto;max-width:none;text-align:center}
+#products{display:block;width:100%}
+.category-group{width:100%}
+.category-group .product-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media(max-width:900px){.category-group .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:370px){.category-group .product-grid{grid-template-columns:1fr}}
 </style>
 
 
