@@ -346,3 +346,11 @@ document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=
   text-align:left;
 }
 </style>
+
+
+<style>
+/* Remove o quadro decorativo RX da área principal */
+.hero-feature{display:none !important}
+.hero-inner{grid-template-columns:minmax(0,1fr) !important}
+.hero-inner>div:first-child{max-width:760px}
+</style>
