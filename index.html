@@ -208,6 +208,18 @@ body{background:#020204;color:#faf9fc}
 .cart-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:34px 10px;text-align:center}
 .cart-empty span{font-size:30px}.cart-empty strong{font:600 14px "Space Grotesk"}.cart-empty small{color:#969ba7;font-size:10px}
 @media(max-width:430px){.cart-product{grid-template-columns:62px minmax(0,1fr);gap:10px}.cart-product-visual{height:62px}.cart-product-subtotal{grid-column:2;justify-self:start;margin-top:-5px}}
+
+.discount-tag{position:absolute;z-index:3;top:12px;right:12px;padding:7px 9px;border-radius:5px;background:#ed3445;color:#fff;font-size:10px;font-weight:900;letter-spacing:.3px;box-shadow:0 4px 16px #0006}
+.price-stack{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.old-price{color:#969ba7;font-size:10px;text-decoration:line-through;text-decoration-color:#ed3445;text-decoration-thickness:1.5px}
+.price-label{color:#e2b96b}
+.discount-note{margin-top:7px;color:#e2b96b;font-size:9px;font-weight:700}
+.cart-price-stack{display:flex;flex-direction:column;gap:2px}
+.cart-old-price{font-size:9px;color:#969ba7;text-decoration:line-through;text-decoration-color:#ed3445}
+.cart-product-info small .cart-discount{color:#e2b96b;font-weight:800}
+.detail-old-price{display:block;margin:5px 0 -5px;color:#969ba7;font-size:13px;text-decoration:line-through;text-decoration-color:#ed3445}
+.detail-discount{display:inline-block;margin:0 0 7px;padding:5px 8px;border-radius:5px;background:#ed3445;color:#fff;font-size:10px;font-weight:900}
+
 </style>
 </head>
 <body>
@@ -239,6 +251,16 @@ const products=[
 {id:7,name:"Passe de Serviço VIP",cat:"Serviços VIP",price:24.90,tag:"VIP",symbol:"♛",tone:"gold",desc:"Atendimento prioritário demonstrativo."},
 {id:8,name:"Conta Gemada — Lendária",cat:"Contas gemadas",price:219.90,tag:"PREMIUM",symbol:"FF",tone:"violet",desc:"Conta ilustrativa de destaque."}
 ];
+// Descontos aleatórios persistidos no navegador para não mudarem a cada atualização.
+const discountKey="ravenx-account-discounts";
+let accountDiscounts={};
+try{accountDiscounts=JSON.parse(localStorage.getItem(discountKey)||"{}")||{}}catch(e){accountDiscounts={}}
+products.filter(p=>p.cat.startsWith("Contas")).forEach(p=>{
+ if(!accountDiscounts[p.id])accountDiscounts[p.id]=Math.floor(Math.random()*25)+51;
+});
+localStorage.setItem(discountKey,JSON.stringify(accountDiscounts));
+products.forEach(p=>{p.discount=accountDiscounts[p.id]||0;p.salePrice=Number((p.price*(1-p.discount/100)).toFixed(2))});
+const currentPrice=p=>p.salePrice??p.price;
 let category="Todos",cart=JSON.parse(localStorage.getItem("ravenx-cart")||"[]");
 const money=n=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 function renderCategories(){const cats=["Todos",...new Set(products.map(p=>p.cat))];document.getElementById("categories").innerHTML=cats.map(c=>'<button type="button" class="chip '+(c===category?'active':'')+'" data-category="'+c+'" aria-pressed="'+(c===category)+'">'+c+'</button>').join("")}
@@ -247,11 +269,11 @@ function render(){
  const q=document.getElementById("search").value.trim().toLocaleLowerCase("pt-BR");
  let list=products.filter(p=>(category==="Todos"||p.cat===category)&&(p.name+" "+p.cat+" "+p.desc).toLocaleLowerCase("pt-BR").includes(q));
  const sort=document.getElementById("sort").value;
- if(sort==="low")list.sort((a,b)=>a.price-b.price);
- if(sort==="high")list.sort((a,b)=>b.price-a.price);
+ if(sort==="low")list.sort((a,b)=>currentPrice(a)-currentPrice(b));
+ if(sort==="high")list.sort((a,b)=>currentPrice(b)-currentPrice(a));
  const grid=document.getElementById("products");
  const groups=category==="Todos"?[...new Set(products.map(p=>p.cat))]:[category];
- const card=p=>'<article class="product-card" onclick="openDetails('+p.id+')"><div class="product-visual '+p.tone+'"><span class="product-tag">'+p.tag+'</span><span class="symbol">'+p.symbol+'</span></div><div class="product-body"><div class="product-category">'+p.cat+'</div><h3>'+p.name+'</h3><p class="product-description">'+p.desc+'</p><div class="product-foot"><div><span class="price-label">PREÇO</span><span class="price">'+money(p.price)+'</span></div><button class="add-btn" aria-label="Adicionar '+p.name+'" onclick="event.stopPropagation();add('+p.id+')">+</button></div></div></article>';
+ const card=p=>'<article class="product-card" onclick="openDetails('+p.id+')"><div class="product-visual '+p.tone+'"><span class="product-tag">'+p.tag+'</span>'+(p.discount?'<span class="discount-tag">-'+p.discount+'%</span>':'')+'<span class="symbol">'+p.symbol+'</span></div><div class="product-body"><div class="product-category">'+p.cat+'</div><h3>'+p.name+'</h3><p class="product-description">'+p.desc+'</p><div class="product-foot"><div class="price-stack">'+(p.discount?'<span class="old-price">'+money(p.price)+'</span>':'')+'<span class="price-label">'+(p.discount?'POR':'PREÇO')+'</span><span class="price">'+money(currentPrice(p))+'</span></div><button class="add-btn" aria-label="Adicionar '+p.name+'" onclick="event.stopPropagation();add('+p.id+')">+</button></div></div></article>';
  grid.innerHTML=groups.map(cat=>{
    const items=list.filter(p=>p.cat===cat);
    if(!items.length)return "";
@@ -263,7 +285,7 @@ document.getElementById("categories").addEventListener("click",event=>{const but
 document.getElementById("search").addEventListener("input",render);
 document.getElementById("sort").addEventListener("change",render);
 let detailProduct=null;
-function openDetails(id){detailProduct=products.find(p=>p.id===id);if(!detailProduct)return;document.getElementById("detailCategory").textContent=detailProduct.cat;document.getElementById("detailName").textContent=detailProduct.name;document.getElementById("detailPrice").textContent=money(detailProduct.price);document.getElementById("detailDescription").textContent=detailProduct.desc+" Confira as informações do anúncio antes de finalizar.";document.getElementById("detailFeatures").innerHTML="<li>Produto selecionado no catálogo</li><li>Preço visível antes da compra</li><li>Entrega pelo e-mail informado no checkout</li>";document.getElementById("detailSymbol").textContent=detailProduct.symbol;document.getElementById("detailMainImage").className="detail-main-image "+detailProduct.tone;document.querySelectorAll(".detail-thumb").forEach((b,i)=>b.classList.toggle("active",i===0));document.getElementById("detailAdd").onclick=()=>{add(detailProduct.id);closeDetails();openCart()};document.getElementById("details").classList.add("open")}
+function openDetails(id){detailProduct=products.find(p=>p.id===id);if(!detailProduct)return;document.getElementById("detailCategory").textContent=detailProduct.cat;document.getElementById("detailName").textContent=detailProduct.name;document.getElementById("detailPrice").innerHTML=(detailProduct.discount?'<span class="detail-old-price">'+money(detailProduct.price)+'</span><span class="detail-discount">-'+detailProduct.discount+'% DE DESCONTO</span>':'')+money(currentPrice(detailProduct));document.getElementById("detailDescription").textContent=detailProduct.desc+" Confira as informações do anúncio antes de finalizar.";document.getElementById("detailFeatures").innerHTML="<li>Produto selecionado no catálogo</li><li>Preço visível antes da compra</li><li>Entrega pelo e-mail informado no checkout</li>";document.getElementById("detailSymbol").textContent=detailProduct.symbol;document.getElementById("detailMainImage").className="detail-main-image "+detailProduct.tone;document.querySelectorAll(".detail-thumb").forEach((b,i)=>b.classList.toggle("active",i===0));document.getElementById("detailAdd").onclick=()=>{add(detailProduct.id);closeDetails();openCart()};document.getElementById("details").classList.add("open")}
 function setDetailImage(i){const symbols=[detailProduct.symbol,"✦","◆"];document.getElementById("detailSymbol").textContent=symbols[i];document.querySelectorAll(".detail-thumb").forEach((b,n)=>b.classList.toggle("active",n===i));const tones=["","violet","blue"];document.getElementById("detailMainImage").className="detail-main-image "+(tones[i]||detailProduct.tone)}
 function closeDetails(){document.getElementById("details").classList.remove("open")}
 function add(id){const item=cart.find(x=>x.id===id);if(item)item.qty++;else cart.push({id,qty:1});saveCart()}
@@ -272,16 +294,16 @@ function saveCart(){
  document.getElementById("count").textContent=cart.reduce((n,x)=>n+x.qty,0);
  const html=cart.map(x=>{
   const p=products.find(y=>y.id===x.id);if(!p)return "";
-  return '<article class="cart-product"><div class="cart-product-visual '+p.tone+'"><span>'+p.symbol+'</span></div><div class="cart-product-info"><span class="cart-product-category">'+p.cat+'</span><strong>'+p.name+'</strong><small>'+money(p.price)+' cada</small><div class="cart-qty"><button type="button" aria-label="Diminuir quantidade" onclick="changeQty('+p.id+',-1)">−</button><b>'+x.qty+'</b><button type="button" aria-label="Aumentar quantidade" onclick="changeQty('+p.id+',1)">+</button><button type="button" class="cart-remove" onclick="removeItem('+p.id+')">Remover</button></div></div><strong class="cart-product-subtotal">'+money(p.price*x.qty)+'</strong></article>';
+  return '<article class="cart-product"><div class="cart-product-visual '+p.tone+'"><span>'+p.symbol+'</span></div><div class="cart-product-info"><span class="cart-product-category">'+p.cat+'</span><strong>'+p.name+'</strong><small><span class="cart-price-stack">'+(p.discount?'<s class="cart-old-price">'+money(p.price)+'</s>':'')+'<span>'+money(currentPrice(p))+' cada'+(p.discount?' · <b class="cart-discount">-'+p.discount+'%</b>':'')+'</span></span></small><div class="cart-qty"><button type="button" aria-label="Diminuir quantidade" onclick="changeQty('+p.id+',-1)">−</button><b>'+x.qty+'</b><button type="button" aria-label="Aumentar quantidade" onclick="changeQty('+p.id+',1)">+</button><button type="button" class="cart-remove" onclick="removeItem('+p.id+')">Remover</button></div></div><strong class="cart-product-subtotal">'+money(currentPrice(p)*x.qty)+'</strong></article>';
  }).join("");
  document.getElementById("cartItems").innerHTML=html||'<div class="cart-empty"><span>🛒</span><strong>Seu carrinho está vazio</strong><small>Adicione um produto para vê-lo aqui.</small></div>';
- document.getElementById("total").textContent=money(cart.reduce((n,x)=>{const p=products.find(y=>y.id===x.id);return n+(p?p.price*x.qty:0)},0));
+ document.getElementById("total").textContent=money(cart.reduce((n,x)=>{const p=products.find(y=>y.id===x.id);return n+(p?currentPrice(p)*x.qty:0)},0));
 }
 function changeQty(id,delta){const item=cart.find(x=>x.id===id);if(!item)return;item.qty+=delta;if(item.qty<=0)cart=cart.filter(x=>x.id!==id);saveCart()}
 function removeItem(id){cart=cart.filter(x=>x.id!==id);saveCart()}
 function openCart(){saveCart();document.getElementById("cart").classList.add("open")}function closeCart(){document.getElementById("cart").classList.remove("open")}
 function checkout(){if(!cart.length){alert("Adicione um produto ao carrinho.");return}closeCart();document.getElementById("email").value="";document.getElementById("confirmEmail").value="";document.getElementById("emailError").style.display="none";document.getElementById("checkout").classList.add("open")}function closeCheckout(){document.getElementById("checkout").classList.remove("open")}
-function saveOrder(){const email=document.getElementById("email").value.trim().toLowerCase();const confirmEmail=document.getElementById("confirmEmail").value.trim().toLowerCase();const valid=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);const error=document.getElementById("emailError");if(!valid){error.textContent="Informe um Gmail válido para entrega.";error.style.display="block";return}if(email!==confirmEmail){error.textContent="Os e-mails não coincidem. Confira os dois campos.";error.style.display="block";document.getElementById("confirmEmail").focus();return}error.style.display="none";const orders=JSON.parse(localStorage.getItem("ravenx-preorders")||"[]");orders.push({id:"RX-"+Date.now(),deliveryEmail:email,items:cart,total:cart.reduce((n,x)=>n+products.find(p=>p.id===x.id).price*x.qty,0),status:"Pré-pedido — aguardando integração Pix",createdAt:new Date().toISOString()});localStorage.setItem("ravenx-preorders",JSON.stringify(orders));cart=[];saveCart();closeCheckout();alert("Pré-pedido salvo neste dispositivo. Nenhum pagamento foi realizado.")}
+function saveOrder(){const email=document.getElementById("email").value.trim().toLowerCase();const confirmEmail=document.getElementById("confirmEmail").value.trim().toLowerCase();const valid=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);const error=document.getElementById("emailError");if(!valid){error.textContent="Informe um Gmail válido para entrega.";error.style.display="block";return}if(email!==confirmEmail){error.textContent="Os e-mails não coincidem. Confira os dois campos.";error.style.display="block";document.getElementById("confirmEmail").focus();return}error.style.display="none";const orders=JSON.parse(localStorage.getItem("ravenx-preorders")||"[]");orders.push({id:"RX-"+Date.now(),deliveryEmail:email,items:cart,total:cart.reduce((n,x)=>n+currentPrice(products.find(p=>p.id===x.id))*x.qty,0),status:"Pré-pedido — aguardando integração Pix",createdAt:new Date().toISOString()});localStorage.setItem("ravenx-preorders",JSON.stringify(orders));cart=[];saveCart();closeCheckout();alert("Pré-pedido salvo neste dispositivo. Nenhum pagamento foi realizado.")}
 document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=>{if(e.target===el)el.classList.remove("open")}));renderCategories();render();saveCart();
 </script>
 </body>
