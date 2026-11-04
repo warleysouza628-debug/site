@@ -260,13 +260,14 @@ const products=[
 {id:5,name:"Conta Colecionador",cat:"Contas raras",price:179.90,tag:"RARIDADE",symbol:"✦",tone:"rose",desc:"Seleção especial para colecionadores."},
 {id:6,name:"Pacote 2.200 Diamantes",cat:"Diamantes",price:69.90,tag:"DESTAQUE",symbol:"◇",tone:"blue",desc:"Pacote demonstrativo de diamantes."},
 {id:7,name:"Passe de Serviço VIP",cat:"Serviços VIP",price:24.90,tag:"VIP",symbol:"♛",tone:"gold",desc:"Atendimento prioritário demonstrativo."},
-{id:8,name:"Conta Gemada — Lendária",cat:"Contas gemadas",price:219.90,tag:"PREMIUM",symbol:"FF",tone:"violet",desc:"Conta ilustrativa de destaque."}
+{id:8,name:"Conta Gemada — Lendária",cat:"Contas gemadas",price:219.90,tag:"PREMIUM",symbol:"FF",tone:"violet",desc:"Conta ilustrativa de destaque."},
+{id:9,name:"Conta Free Fire",cat:"Contas Free Fire",price:43.90,tag:"OFERTA",symbol:"FF",tone:"",image:"https://flow-content.google/image/ffc3ceb9-7c01-4321-8c60-89338ba0c4df?Expires=1793838593&KeyName=labs-flow-prod-cdn-key&Signature=DdJtMv_FswM_V11UYZ47FYMYpdc",desc:"Conta de Free Fire anunciada por R$ 43,90. As características e os itens da conta serão detalhados no anúncio após a confirmação das informações."}
 ];
 // Descontos aleatórios persistidos no navegador para não mudarem a cada atualização.
 const discountKey="ravenx-account-discounts";
 let accountDiscounts={};
 try{accountDiscounts=JSON.parse(localStorage.getItem(discountKey)||"{}")||{}}catch(e){accountDiscounts={}}
-products.filter(p=>p.cat.startsWith("Contas")).forEach(p=>{
+products.filter(p=>p.cat.startsWith("Contas")&&!p.noDiscount&&p.id!==9).forEach(p=>{
  if(!accountDiscounts[p.id])accountDiscounts[p.id]=Math.floor(Math.random()*25)+51;
 });
 localStorage.setItem(discountKey,JSON.stringify(accountDiscounts));
@@ -284,7 +285,7 @@ function render(){
  if(sort==="high")list.sort((a,b)=>currentPrice(b)-currentPrice(a));
  const grid=document.getElementById("products");
  const groups=category==="Todos"?[...new Set(products.map(p=>p.cat))]:[category];
- const card=p=>'<article class="product-card" onclick="openDetails('+p.id+')"><div class="product-visual '+p.tone+'"><span class="product-tag">'+p.tag+'</span>'+(p.discount?'<span class="discount-tag">-'+p.discount+'%</span>':'')+'<span class="symbol">'+p.symbol+'</span></div><div class="product-body"><div class="product-category">'+p.cat+'</div><h3>'+p.name+'</h3><p class="product-description">'+p.desc+'</p><div class="product-foot"><div class="price-stack">'+(p.discount?'<span class="old-price">'+money(p.price)+'</span>':'')+'<span class="price-label">'+(p.discount?'POR':'PREÇO')+'</span><span class="price">'+money(currentPrice(p))+'</span></div><button class="add-btn" aria-label="Adicionar '+p.name+'" onclick="event.stopPropagation();add('+p.id+')">+</button></div></div></article>';
+ const card=p=>'<article class="product-card" onclick="openDetails('+p.id+')"><div class="product-visual '+p.tone+'">'+(p.image?'<img class="product-photo" src="'+p.image+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\'">':'<span class="symbol">'+p.symbol+'</span>')+'<span class="product-tag">'+p.tag+'</span>'+(p.discount?'<span class="discount-tag">-'+p.discount+'%</span>':'')+'</div><div class="product-body"><div class="product-category">'+p.cat+'</div><h3>'+p.name+'</h3><p class="product-description">'+p.desc+'</p><div class="product-foot"><div class="price-stack">'+(p.discount?'<span class="old-price">'+money(p.price)+'</span>':'')+'<span class="price-label">'+(p.discount?'POR':'PREÇO')+'</span><span class="price">'+money(currentPrice(p))+'</span></div><button class="add-btn" aria-label="Adicionar '+p.name+'" onclick="event.stopPropagation();add('+p.id+')">+</button></div></div></article>';
  grid.innerHTML=groups.map(cat=>{
    const items=list.filter(p=>p.cat===cat);
    if(!items.length)return "";
@@ -296,8 +297,8 @@ document.getElementById("categories").addEventListener("click",event=>{const but
 document.getElementById("search").addEventListener("input",render);
 document.getElementById("sort").addEventListener("change",render);
 let detailProduct=null;
-function openDetails(id){detailProduct=products.find(p=>p.id===id);if(!detailProduct)return;document.getElementById("detailCategory").textContent=detailProduct.cat;document.getElementById("detailName").textContent=detailProduct.name;document.getElementById("detailPrice").innerHTML=(detailProduct.discount?'<span class="detail-old-price">'+money(detailProduct.price)+'</span><span class="detail-discount">-'+detailProduct.discount+'% DE DESCONTO</span>':'')+money(currentPrice(detailProduct));document.getElementById("detailDescription").textContent=detailProduct.desc+" Confira as informações do anúncio antes de finalizar.";document.getElementById("detailFeatures").innerHTML="<li>Produto selecionado no catálogo</li><li>Preço visível antes da compra</li><li>Entrega pelo e-mail informado no checkout</li>";document.getElementById("detailSymbol").textContent=detailProduct.symbol;document.getElementById("detailMainImage").className="detail-main-image "+detailProduct.tone;document.querySelectorAll(".detail-thumb").forEach((b,i)=>b.classList.toggle("active",i===0));document.getElementById("detailAdd").onclick=()=>{add(detailProduct.id);closeDetails();openCart()};document.getElementById("details").classList.add("open")}
-function setDetailImage(i){const symbols=[detailProduct.symbol,"✦","◆"];document.getElementById("detailSymbol").textContent=symbols[i];document.querySelectorAll(".detail-thumb").forEach((b,n)=>b.classList.toggle("active",n===i));const tones=["","violet","blue"];document.getElementById("detailMainImage").className="detail-main-image "+(tones[i]||detailProduct.tone)}
+function openDetails(id){detailProduct=products.find(p=>p.id===id);if(!detailProduct)return;document.getElementById("detailCategory").textContent=detailProduct.cat;document.getElementById("detailName").textContent=detailProduct.name;document.getElementById("detailPrice").innerHTML=(detailProduct.discount?'<span class="detail-old-price">'+money(detailProduct.price)+'</span><span class="detail-discount">-'+detailProduct.discount+'% DE DESCONTO</span>':'')+money(currentPrice(detailProduct));document.getElementById("detailDescription").textContent=detailProduct.desc+" Confira as informações do anúncio antes de finalizar.";document.getElementById("detailFeatures").innerHTML="<li>Produto selecionado no catálogo</li><li>Preço visível antes da compra</li><li>Entrega pelo e-mail informado no checkout</li>";document.getElementById("detailMainImage").className="detail-main-image "+detailProduct.tone;document.getElementById("detailMainImage").innerHTML=detailProduct.image?'<img class="detail-photo" src="'+detailProduct.image+'" alt="'+detailProduct.name+'" onerror="this.outerHTML=\'<span class=\\\'symbol\\\'>FF</span>\'">':'<span class="symbol" id="detailSymbol">'+detailProduct.symbol+'</span>';document.querySelectorAll(".detail-thumb").forEach((b,i)=>b.classList.toggle("active",i===0));document.getElementById("detailAdd").onclick=()=>{add(detailProduct.id);closeDetails();openCart()};document.getElementById("details").classList.add("open")}
+function setDetailImage(i){if(detailProduct.image)return;const symbols=[detailProduct.symbol,"✦","◆"];document.getElementById("detailSymbol").textContent=symbols[i];document.querySelectorAll(".detail-thumb").forEach((b,n)=>b.classList.toggle("active",n===i));const tones=["","violet","blue"];document.getElementById("detailMainImage").className="detail-main-image "+(tones[i]||detailProduct.tone)}
 function closeDetails(){document.getElementById("details").classList.remove("open")}
 function add(id){const item=cart.find(x=>x.id===id);if(item)item.qty++;else cart.push({id,qty:1});saveCart()}
 function saveCart(){
@@ -305,7 +306,7 @@ function saveCart(){
  document.getElementById("count").textContent=cart.reduce((n,x)=>n+x.qty,0);
  const html=cart.map(x=>{
   const p=products.find(y=>y.id===x.id);if(!p)return "";
-  return '<article class="cart-product"><div class="cart-product-visual '+p.tone+'"><span>'+p.symbol+'</span></div><div class="cart-product-info"><span class="cart-product-category">'+p.cat+'</span><strong>'+p.name+'</strong><small><span class="cart-price-stack">'+(p.discount?'<s class="cart-old-price">'+money(p.price)+'</s>':'')+'<span>'+money(currentPrice(p))+' cada'+(p.discount?' · <b class="cart-discount">-'+p.discount+'%</b>':'')+'</span></span></small><div class="cart-qty"><button type="button" aria-label="Diminuir quantidade" onclick="changeQty('+p.id+',-1)">−</button><b>'+x.qty+'</b><button type="button" aria-label="Aumentar quantidade" onclick="changeQty('+p.id+',1)">+</button><button type="button" class="cart-remove" onclick="removeItem('+p.id+')">Remover</button></div></div><strong class="cart-product-subtotal">'+money(currentPrice(p)*x.qty)+'</strong></article>';
+  return '<article class="cart-product"><div class="cart-product-visual '+p.tone+'">'+(p.image?'<img src="'+p.image+'" alt="'+p.name+'">':'<span>'+p.symbol+'</span>')+'</div><div class="cart-product-info"><span class="cart-product-category">'+p.cat+'</span><strong>'+p.name+'</strong><small><span class="cart-price-stack">'+(p.discount?'<s class="cart-old-price">'+money(p.price)+'</s>':'')+'<span>'+money(currentPrice(p))+' cada'+(p.discount?' · <b class="cart-discount">-'+p.discount+'%</b>':'')+'</span></span></small><div class="cart-qty"><button type="button" aria-label="Diminuir quantidade" onclick="changeQty('+p.id+',-1)">−</button><b>'+x.qty+'</b><button type="button" aria-label="Aumentar quantidade" onclick="changeQty('+p.id+',1)">+</button><button type="button" class="cart-remove" onclick="removeItem('+p.id+')">Remover</button></div></div><strong class="cart-product-subtotal">'+money(currentPrice(p)*x.qty)+'</strong></article>';
  }).join("");
  document.getElementById("cartItems").innerHTML=html||'<div class="cart-empty"><span>🛒</span><strong>Seu carrinho está vazio</strong><small>Adicione um produto para vê-lo aqui.</small></div>';
  document.getElementById("total").textContent=money(cart.reduce((n,x)=>{const p=products.find(y=>y.id===x.id);return n+(p?currentPrice(p)*x.qty:0)},0));
@@ -319,3 +320,10 @@ document.querySelectorAll(".overlay").forEach(el=>el.addEventListener("click",e=
 </script>
 </body>
 </html>
+<style>
+.product-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.product-visual .product-tag,.product-visual .discount-tag{z-index:3}
+.detail-main-image{position:relative}
+.detail-photo{width:100%;height:100%;object-fit:contain;display:block}
+.cart-product-visual img{width:100%;height:100%;object-fit:cover;display:block}
+</style>
