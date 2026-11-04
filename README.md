@@ -1,4 +1,4 @@
-# FF LEGACY
+# RAVENX STORE
 
 Loja estática em HTML, CSS e JavaScript, preparada para GitHub Pages.
 
