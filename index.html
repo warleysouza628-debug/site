@@ -300,7 +300,7 @@ body{background:#020204;color:#faf9fc}
 <div class="overlay" id="checkout"><div class="panel"><div class="panel-head"><h2>Quase lá</h2><button class="close" onclick="closeCheckout()">×</button></div><p class="panel-hint">Informe o Gmail que deverá receber os dados de entrega.</p><label class="field-label" for="email">GMAIL DE ENTREGA</label><input class="field" id="email" type="email" autocomplete="email" placeholder="seugmail@gmail.com"><label class="field-label" for="confirmEmail">CONFIRME O GMAIL DE ENTREGA</label><input class="field" id="confirmEmail" type="email" autocomplete="email" placeholder="Digite novamente seu Gmail"><p class="email-error" id="emailError">Os e-mails não coincidem. Confira os dois campos.</p><div class="pix-info">🔒 <strong>Pagamento Pix indisponível nesta versão.</strong><br>A integração com a gateway será configurada antes de aceitar pagamentos reais.</div><button class="full-btn" onclick="saveOrder()">REGISTRAR PRÉ-PEDIDO</button></div></div>
 <script>
 const products=[
-{id:9,name:"CONTA DE FREE FIRE RARA | RAGNAROK | PASSE ANTIGO | EVOLUTIVA | SOMBRA ROXA",cat:"Contas Free Fire",price:43.90,tag:"OFERTA",symbol:"FF",tone:"",image:"https://i.imgur.com/93pxh65.png",desc:"Conta rara com conjunto Ragnarok, passe antigo, skin evolutiva e item Sombra Roxa. Uma seleção especial para quem procura itens antigos e cosméticos diferenciados no Free Fire."},
+{id:9,name:"CONTA DE FREE FIRE RARA | RAGNAROK | PASSE ANTIGO | EVOLUTIVA | SOMBRA ROXA",cat:"Contas Free Fire",price:189.90,discount:79,salePrice:43.90,fixedDiscount:true,tag:"OFERTA",symbol:"FF",tone:"",image:"https://i.imgur.com/93pxh65.png",desc:"Conta rara com conjunto Ragnarok, passe antigo, skin evolutiva e item Sombra Roxa. Uma seleção especial para quem procura itens antigos e cosméticos diferenciados no Free Fire."},
 {id:1,name:"Conta Elite — Coleção Rara",cat:"Contas raras",price:89.90,tag:"DESTAQUE",symbol:"FF",tone:"",desc:"Conta demonstrativa com coleção especial."},
 {id:2,name:"Conta Gemada — Edição Pro",cat:"Contas gemadas",price:129.90,tag:"POPULAR",symbol:"◆",tone:"violet",desc:"Seleção premium para personalização."},
 {id:3,name:"Pacote 1.000 Diamantes",cat:"Diamantes",price:34.90,tag:"EM ALTA",symbol:"◇",tone:"blue",desc:"Pacote demonstrativo de diamantes."},
@@ -319,7 +319,7 @@ products.filter(p=>p.cat.startsWith("Contas")&&!p.noDiscount&&p.id!==9).forEach(
  if(!accountDiscounts[p.id])accountDiscounts[p.id]=Math.floor(Math.random()*25)+51;
 });
 localStorage.setItem(discountKey,JSON.stringify(accountDiscounts));
-products.forEach(p=>{p.discount=accountDiscounts[p.id]||0;p.salePrice=Number((p.price*(1-p.discount/100)).toFixed(2))});
+products.forEach(p=>{if(p.fixedDiscount){p.discount=79;p.salePrice=43.90}else{p.discount=accountDiscounts[p.id]||0;p.salePrice=Number((p.price*(1-p.discount/100)).toFixed(2))}});
 const currentPrice=p=>p.salePrice??p.price;
 let category="Todos",cart=JSON.parse(localStorage.getItem("ravenx-cart")||"[]");
 const money=n=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
