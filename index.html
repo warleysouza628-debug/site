@@ -257,6 +257,19 @@ body{background:#020204;color:#faf9fc}
  .hero{min-height:590px;background-position:center center !important}
  .brand-mark.brand-logo{width:37px;height:37px;flex-basis:37px}
 }
+
+/* Ajuste de luminosidade da miniatura da marca */
+.brand-mark.brand-logo{
+ background:radial-gradient(circle at 50% 45%,#3b0710 0%,#10070a 72%);
+ border-color:rgba(255,45,65,.9);
+ box-shadow:0 0 9px rgba(255,35,55,.5),0 0 22px rgba(255,35,55,.25);
+}
+.brand-mark.brand-logo img{
+ mix-blend-mode:normal !important;
+ filter:brightness(1.75) contrast(1.12) saturate(1.18);
+ object-fit:cover;
+ object-position:center;
+}
 </style>
 
 </head>
