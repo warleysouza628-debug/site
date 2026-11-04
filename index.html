@@ -181,6 +181,12 @@ body{background:#020204;color:#faf9fc}
 .product-foot{border-top-color:#ffffff12}
 @media(max-width:650px){.brand-name{font-size:15px}}
 
+
+.category-group{margin:8px 0 34px}
+.category-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 13px;padding:0 0 11px;border-bottom:1px solid #ffffff20}
+.category-heading span{font:700 17px "Space Grotesk";letter-spacing:-.35px;color:#f3f3f4}
+.category-heading small{color:#969ba7;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.category-group .product-grid{margin:0}
 </style>
 </head>
 <body>
@@ -216,7 +222,22 @@ let category="Todos",cart=JSON.parse(localStorage.getItem("ravenx-cart")||"[]");
 const money=n=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 function renderCategories(){const cats=["Todos",...new Set(products.map(p=>p.cat))];document.getElementById("categories").innerHTML=cats.map(c=>'<button type="button" class="chip '+(c===category?'active':'')+'" data-category="'+c+'" aria-pressed="'+(c===category)+'">'+c+'</button>').join("")}
 function setCategory(c){category=c;renderCategories();render()}
-function render(){const q=document.getElementById("search").value.trim().toLocaleLowerCase("pt-BR");let list=products.filter(p=>(category==="Todos"||p.cat===category)&&(p.name+" "+p.cat+" "+p.desc).toLocaleLowerCase("pt-BR").includes(q));const sort=document.getElementById("sort").value;if(sort==="low")list.sort((a,b)=>a.price-b.price);if(sort==="high")list.sort((a,b)=>b.price-a.price);document.getElementById("products").innerHTML=list.map(p=>'<article class="product-card" onclick="openDetails('+p.id+')"><div class="product-visual '+p.tone+'"><span class="product-tag">'+p.tag+'</span><span class="symbol">'+p.symbol+'</span></div><div class="product-body"><div class="product-category">'+p.cat+'</div><h3>'+p.name+'</h3><p class="product-description">'+p.desc+'</p><div class="product-foot"><div><span class="price-label">PREÇO</span><span class="price">'+money(p.price)+'</span></div><button class="add-btn" aria-label="Adicionar '+p.name+'" onclick="event.stopPropagation();add('+p.id+')">+</button></div></div></article>').join("");document.getElementById("empty").style.display=list.length?"none":"block"}
+function render(){
+ const q=document.getElementById("search").value.trim().toLocaleLowerCase("pt-BR");
+ let list=products.filter(p=>(category==="Todos"||p.cat===category)&&(p.name+" "+p.cat+" "+p.desc).toLocaleLowerCase("pt-BR").includes(q));
+ const sort=document.getElementById("sort").value;
+ if(sort==="low")list.sort((a,b)=>a.price-b.price);
+ if(sort==="high")list.sort((a,b)=>b.price-a.price);
+ const grid=document.getElementById("products");
+ const groups=category==="Todos"?[...new Set(products.map(p=>p.cat))]:[category];
+ const card=p=>'<article class="product-card" onclick="openDetails('+p.id+')"><div class="product-visual '+p.tone+'"><span class="product-tag">'+p.tag+'</span><span class="symbol">'+p.symbol+'</span></div><div class="product-body"><div class="product-category">'+p.cat+'</div><h3>'+p.name+'</h3><p class="product-description">'+p.desc+'</p><div class="product-foot"><div><span class="price-label">PREÇO</span><span class="price">'+money(p.price)+'</span></div><button class="add-btn" aria-label="Adicionar '+p.name+'" onclick="event.stopPropagation();add('+p.id+')">+</button></div></div></article>';
+ grid.innerHTML=groups.map(cat=>{
+   const items=list.filter(p=>p.cat===cat);
+   if(!items.length)return "";
+   return '<section class="category-group"><div class="category-heading"><span>'+cat+'</span><small>'+items.length+' '+(items.length===1?'produto':'produtos')+'</small></div><div class="product-grid">'+items.map(card).join("")+'</div></section>';
+ }).join("");
+ document.getElementById("empty").style.display=list.length?"none":"block";
+}
 document.getElementById("categories").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(button)setCategory(button.dataset.category)});
 document.getElementById("search").addEventListener("input",render);
 document.getElementById("sort").addEventListener("change",render);
