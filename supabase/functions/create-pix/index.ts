@@ -17,14 +17,23 @@ async function sha256Hex(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 async function smokepayRequest(path: string, apiKey: string, init?: RequestInit) {
   const url = `https://smokepay.com.br${path}`;
-  let lastError: unknown;
+  const requestBody = typeof init?.body === "string" ? init.body : "{}";
+  let externalId = "";
+  try { externalId = String((JSON.parse(requestBody) as { external_id?: string }).external_id ?? ""); } catch { /* no idempotency key in this request */ }
 
-  // Retry only transient errors. Reuse the exact same external_id and payload.
   for (let attempt = 0; attempt < 4; attempt++) {
+    let response: Response;
     try {
-      const response = await fetch(url, {
+      response = await fetch(url, {
         ...init,
         headers: {
           "x-api-key": apiKey,
@@ -32,31 +41,29 @@ async function smokepayRequest(path: string, apiKey: string, init?: RequestInit)
           ...(init?.headers ?? {}),
         },
       });
+    } catch (networkError) {
+      if (attempt === 3) throw networkError;
+      await sleep(Math.min(8000, 500 * (2 ** attempt)) + Math.floor(Math.random() * 250));
+      continue;
+    }
 
-      if (response.ok) return await response.json();
+    if (response.ok) return await response.json();
 
-      const detail = await response.text();
-      if (response.status === 409) {
-        // The provider documents lookup by external_id; this safely reconciles
-        // a create request whose response was lost after the provider accepted it.
-        const lookup = await fetch(`${url.replace(/\/api\/pix\/create$/, "")}/api/pix/${encodeURIComponent(
-          (JSON.parse(String(init?.body ?? "{}")) as { external_id?: string }).external_id ?? "",
-        )}`, { headers: { "x-api-key": apiKey } });
-        if (lookup.ok) return await lookup.json();
-        throw new Error(`SmokePay conflict; lookup failed: ${await lookup.text()}`);
-      }
+    const detail = await response.text();
+    if (response.status === 409 && externalId) {
+      const lookup = await fetch(`https://smokepay.com.br/api/pix/${encodeURIComponent(externalId)}`, {
+        headers: { "x-api-key": apiKey },
+      });
+      if (lookup.ok) return await lookup.json();
+      throw new Error(`SmokePay conflict; lookup failed with HTTP ${lookup.status}`);
+    }
 
-      if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 3) {
-        throw new Error(`SmokePay HTTP ${response.status}: ${detail.slice(0, 500)}`);
-      }
-      lastError = new Error(`SmokePay HTTP ${response.status}`);
-    } catch (error) {
-      lastError = error;
-      if (attempt === 3) break;
+    if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 3) {
+      throw new Error(`SmokePay HTTP ${response.status}: ${detail.slice(0, 500)}`);
     }
     await sleep(Math.min(8000, 500 * (2 ** attempt)) + Math.floor(Math.random() * 250));
   }
-  throw lastError instanceof Error ? lastError : new Error("SmokePay request failed");
+  throw new Error("SmokePay request failed after retries");
 }
 
 Deno.serve(async (req) => {
@@ -90,7 +97,7 @@ Deno.serve(async (req) => {
 
     if (orderError) throw orderError;
     if (!order) return json(404, { error: "Order not found" });
-    if (await sha256Hex(checkoutToken) !== order.checkout_token_hash) {
+    if (!constantTimeEqual(await sha256Hex(checkoutToken), order.checkout_token_hash)) {
       return json(403, { error: "Invalid checkout token" });
     }
     if (order.status === "paid") return json(409, { error: "Order already paid" });
@@ -105,8 +112,11 @@ Deno.serve(async (req) => {
       if (error) throw error;
     }
 
-    const amount = Number((BigInt(order.amount_cents) / 100n).toString()) +
-      Number((BigInt(order.amount_cents) % 100n).toString()) / 100;
+    const cents = BigInt(order.amount_cents);
+    if (cents <= 0n || cents > BigInt(Number.MAX_SAFE_INTEGER)) {
+      return json(400, { error: "Invalid order amount" });
+    }
+    const amount = Number(cents) / 100;
 
     const payment = await smokepayRequest("/api/pix/create", apiKey, {
       method: "POST",
