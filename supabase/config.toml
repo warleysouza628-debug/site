@@ -1,0 +1,7 @@
+project_id = "ravenx-store"
+
+[functions.create-pix]
+verify_jwt = false
+
+[functions.smokepay-webhook]
+verify_jwt = false
